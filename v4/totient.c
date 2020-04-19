@@ -51,7 +51,7 @@ int main(int argc, char ** argv) {
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
     args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, Memory, sizeof(ulong), numGroups, NULL);
+    args[2] = createKernelArg(device, 2, None, sizeof(ulong), numGroups, NULL);
     args[3] = createKernelArg(device, 3, Output, sizeof(ulong), 1, &sum);
     initKernelArgs(&kernel, NUM_ARGS, args);
 

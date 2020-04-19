@@ -27,7 +27,7 @@ ulong euler(ulong n) {
     return length;
 }
 
-__kernel void totient(const ulong lower, const ulong upper, __global ulong *local_sum, __global ulong *result) {
+__kernel void totient(const ulong lower, const ulong upper, __local ulong *local_sum, __global ulong *result) {
     uint globalID, groupID, localID;
     ulong value;
 
