@@ -10,6 +10,7 @@ Using OpenCL to optimize the sequential code for totient sum.
 - `v4/`: extended v3 to add global sum reduction
 - `v5/`: shorten v4 to just global atomic sum reduction
 - `v6/`: modified v2 for parallel sum reduction (local sync)
+- `v7/`: extended v6 to add global atomic sum reduction (like v4)
 
 ## Usage
 

@@ -27,14 +27,16 @@ ulong euler(ulong n) {
     return length;
 }
 
-__kernel void totient(const ulong lower, const ulong upper, __local ulong *localSums, __global ulong *groupResults) {
-    uint globalID, groupID, localID, localSize;
+__kernel void totient(const ulong lower, const ulong upper, __local ulong *localSums, __global ulong *result) {
+    uint globalID, localID, localSize;
     ulong value = 0;
 
     globalID = get_global_id(0);
-    groupID = get_group_id(0);
     localID = get_local_id(0);
     localSize = get_local_size(0);
+
+    if (globalID == 0) { *result = 0; }
+    barrier(CLK_GLOBAL_MEM_FENCE);
 
     if (globalID + lower <= upper) { value = euler(globalID + lower); }
 
@@ -44,5 +46,6 @@ __kernel void totient(const ulong lower, const ulong upper, __local ulong *local
         if (localID < offset) { localSums[localID] += localSums[localID + offset]; }
     }
 
-    if (localID == 0) { groupResults[groupID] = localSums[0]; }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (localID == 0) { atom_add(result, localSums[0]); }
 }
