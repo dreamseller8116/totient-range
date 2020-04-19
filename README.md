@@ -6,8 +6,10 @@ Using OpenCL to optimize the sequential code for totient sum.
 - `utils/`: timer + OpenCL configuration
 - `v1/`: basic OpenCL implementation
 - `v2/`: local sum reduction on kernel (local sync)
-- `v3/`: using atomic function for reduction from v2
-- `v4/`: added global sum reduction to v3
+- `v3/`: modified v2 with atomic sum reduction
+- `v4/`: extended v3 to add global sum reduction
+- `v5/`: shorten v4 to just global atomic sum reduction
+- `v6/`: modified v2 for parallel sum reduction (local sync)
 
 ## Usage
 
