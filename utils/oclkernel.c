@@ -49,15 +49,15 @@ KernelArg createKernelArg(Device device, uint pos, IO io, size_t sizeOfType, uin
     // Total size of `values` (eg. if `int values[length]`, then `sizeof(int) * length`)
     arg.host.size = sizeOfType * length;
 
-    // If length == 1, then the argument is considered as a value
-    // Else, the argument is an array. It requires the creation of a buffer
-    if (length > 1) {
-        flag = (arg.io == Input) ? CL_MEM_WRITE_ONLY : (arg.io == Output) ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE;
+    // If io is None, then the argument do not need a buffer for either read nor write from host
+    // Else, it requires the creation of a buffer
+    if (arg.io != None) {
+        flag = (arg.io == Memory) ? CL_MEM_HOST_NO_ACCESS : (arg.io == Input) ? CL_MEM_WRITE_ONLY : (arg.io == Output) ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE;
         arg.device.value = clCreateBuffer(device.context, flag, arg.host.size, NULL, &status);
         if (status != CL_SUCCESS || !(arg.device.value)) { ERROR("Error: Could not create the buffer for the kernel arg n°%d (code: %d)\n", pos, status); }
 
         // If the argument is write-only or read-write, we enqueue its writing
-        if (arg.io != Output) {
+        if (arg.io == Input || arg.io == InputOutput) {
             status = clEnqueueWriteBuffer(device.cmdQueue, arg.device.value, CL_TRUE, 0, arg.host.size, arg.host.values, 0, NULL, NULL);
             if (status != CL_SUCCESS) { ERROR("Error: Could not enqueue the writing of buffer from kernel arg n°%d (code: %d)\n", pos, status); }
         }
@@ -69,11 +69,9 @@ KernelArg createKernelArg(Device device, uint pos, IO io, size_t sizeOfType, uin
     return arg;
 }
 
-Kernel initKernel(Device device, char *name, char *filename, uint numArgs, KernelArg *args) {
+Kernel initKernel(Device device, char *name, char *filename) {
     size_t sourceSize, logSize;
     char *source, *log;
-    uint argSize = 0;
-    void *argValue;
     Kernel kernel;
     cl_int status;
 
@@ -100,18 +98,6 @@ Kernel initKernel(Device device, char *name, char *filename, uint numArgs, Kerne
     kernel.kernel = clCreateKernel(kernel.program, name, &status);
     if (status != CL_SUCCESS || !(kernel.kernel)) { ERROR("Error: Could not create the kernel (code: %d)\n", status); }
 
-    // Set all the kernel arguments
-    kernel.args = args;
-    kernel.numArgs = numArgs;
-    for (uint i = 0; i < kernel.numArgs; i++) {
-        // If the argument is an array, then we provide `kernelArg.device` information, otherwise `kernelArg.host`
-        argValue = (kernel.args[i].device.size != 0) ? &(kernel.args[i].device.value) : kernel.args[i].host.values;
-        argSize = (kernel.args[i].device.size != 0) ? kernel.args[i].device.size : kernel.args[i].host.size;
-
-        status = clSetKernelArg(kernel.kernel, kernel.args[i].pos, argSize, argValue);
-        if (status != CL_SUCCESS) { ERROR("Error: Could not set kernel arg n°%d (code: %d)\n", kernel.args[i].pos, status); }
-    }
-
     return kernel;
 }
 
@@ -122,18 +108,36 @@ void getMaxLocalSize(Device device, Kernel kernel, size_t *p_localSize) {
     if (status != CL_SUCCESS) { ERROR("Error: Could not retrieve the maximum local size (code: %d)\n", status); }
 }
 
-void checkRangeSizes(Kernel kernel, Device device, cl_uint dim, size_t *global, size_t *local) {
+void checkRangeSizes(Kernel kernel, Device device, KernelRange range) {
     size_t localSize;
 
     getMaxLocalSize(device, kernel, &localSize);
 
-    for (uint i = 0; i < dim; i++) {
-        if (local[i] > localSize) { ERROR("Error: The local size [%d] exceeds its maximum (eg. %zu)\n", i, localSize); }
-        if (global[i] % local[i] != 0) { ERROR("Error: The global size needs to be divisable by the local size in [%d]\n", i); }
+    for (uint i = 0; i < range.dim; i++) {
+        if (range.local[i] > localSize) { ERROR("Error: The local size [%d] exceeds its maximum (eg. %zu)\n", i, localSize); }
+        if (range.global[i] % range.local[i] != 0) { ERROR("Error: The global size needs to be divisable by the local size in [%d]\n", i); }
     }
 }
 
-void runKernel(Kernel *p_kernel, Device device, cl_uint dim, size_t *global, size_t *local) {
+void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args) {
+    uint argSize = 0;
+    void *argValue;
+    cl_int status;
+
+    // Set all the kernel arguments
+    p_kernel->args = args;
+    p_kernel->numArgs = numArgs;
+    for (uint i = 0; i < p_kernel->numArgs; i++) {
+        // If the argument is an array, then we provide `kernelArg.device` information, otherwise `kernelArg.host`
+        argValue = (p_kernel->args[i].device.size != 0) ? &(p_kernel->args[i].device.value) : p_kernel->args[i].host.values;
+        argSize = (p_kernel->args[i].device.size != 0) ? p_kernel->args[i].device.size : p_kernel->args[i].host.size;
+
+        status = clSetKernelArg(p_kernel->kernel, p_kernel->args[i].pos, argSize, argValue);
+        if (status != CL_SUCCESS) { ERROR("Error: Could not set kernel arg n°%d (code: %d)\n", p_kernel->args[i].pos, status); }
+    }
+}
+
+void runKernel(Kernel *p_kernel, Device device, KernelRange range) {
     Time startKernel, stopKernel;
     cl_ulong startGPU, stopGPU;
     cl_event event;
@@ -142,10 +146,10 @@ void runKernel(Kernel *p_kernel, Device device, cl_uint dim, size_t *global, siz
     startKernel = wcTime();
 
     // First heck the arguments
-    checkRangeSizes(*p_kernel, device, dim, global, local);
+    checkRangeSizes(*p_kernel, device, range);
 
     // Enqueue the kernel execution
-    status = clEnqueueNDRangeKernel(device.cmdQueue, p_kernel->kernel, dim, NULL, global, local, 0, NULL, &event);
+    status = clEnqueueNDRangeKernel(device.cmdQueue, p_kernel->kernel, range.dim, NULL, range.global, range.local, 0, NULL, &event);
     if (status != CL_SUCCESS) { ERROR("Error: Could not run the kernel (code: %d)\n", status); }
 
     // Wait for the kernel to finish
@@ -164,7 +168,7 @@ void runKernel(Kernel *p_kernel, Device device, cl_uint dim, size_t *global, siz
     // For each kernel argument
     for (uint i = 0; i < p_kernel->numArgs; i++) {
         // Retrieve buffer if exists and is read-only or read-write
-        if (p_kernel->args[i].device.size != 0 && p_kernel->args[i].io != Input) {
+        if (p_kernel->args[i].device.size != 0 && p_kernel->args[i].io != Memory && p_kernel->args[i].io != Input) {
             status = clEnqueueReadBuffer(device.cmdQueue, p_kernel->args[i].device.value, CL_TRUE, 0, p_kernel->args[i].host.size, p_kernel->args[i].host.values, 0, NULL, NULL);
             if (status != CL_SUCCESS) { ERROR("Error: Could not enqueue the reading of buffer back to the host (arg n°%d) (code: %d)\n", p_kernel->args[i].pos, status); }
         }

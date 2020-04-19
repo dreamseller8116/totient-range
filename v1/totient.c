@@ -19,53 +19,55 @@
 int main(int argc, char ** argv) {
     ulong *result;
     char deviceType[4];
-    size_t global, local;
-    ulong lower, upper, count, sum = 0;
+    ulong lower, upper, dataSize, sum = 0;
     Time start, initStop, stop;
     KernelArg args[NUM_ARGS];
+    KernelRange range;
     Device device;
     Kernel kernel;
 
     // Inputs / Output initialization
-    if (argc != 3) { ERROR("Error: Need 2 arguments (lower and upper)\n"); }
+    if (argc < 3) { ERROR("Error: Need at least 2 arguments (lower upper [cpu])\n"); }
 
     sscanf(argv[1], "%ld", &lower);
     sscanf(argv[2], "%ld", &upper);
 
-    count = upper - lower + 1;
-    result = (ulong*) malloc(count * sizeof(ulong));
+    dataSize = upper - lower + 1;
+    result = (ulong*) malloc(dataSize * sizeof(ulong));
 
     start = wcTime();
     
     // Init the device
-    device = initDevice(CL_DEVICE_TYPE_GPU, CL_FALSE);
+    device = initDevice((argc == 4) ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU, CL_FALSE);
     strcpy(deviceType, (device.type == CL_DEVICE_TYPE_GPU) ? "GPU" : "CPU");
 
-    // Create all the kernel arguments
-    args[0] = createKernelArg(device, 0, Input, sizeof(ulong), 1, &lower);
-    args[1] = createKernelArg(device, 1, Input, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), count, result);
-
     // Init the kernel
-    kernel = initKernel(device, KERNEL_NAME, SOURCE_FILE, NUM_ARGS, args);
+    kernel = initKernel(device, KERNEL_NAME, SOURCE_FILE);
+
+    // Create all the kernel arguments
+    args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
+    args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
+    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), dataSize, result);
+    initKernelArgs(&kernel, NUM_ARGS, args);
 
     initStop = wcTime();
 
     // Run the kernel
-    getMaxLocalSize(device, kernel, &local);
-    if (count < local) local = count;
+    range.dim = 1;
+    getMaxLocalSize(device, kernel, range.local);
+    if (dataSize < range.local[0]) range.local[0] = dataSize;
 
-    global = ceil(count / (float)local) * local;
+    range.global[0] = ceil(dataSize / (float)range.local[0]) * range.local[0];
 
-    runKernel(&kernel, device, 1, &global, &local);
+    runKernel(&kernel, device, range);
 
     // Sum the results
-    for (ulong i = 0; i < count; i++) { sum += result[i]; }
+    for (ulong i = 0; i < dataSize; i++) { sum += result[i]; }
 
     stop = wcTime();
 
     // Benchmark
-    printf("%s,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (long)global, (long)local, elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
+    printf("%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
 
     // Clean OpenCL
     cleanDevice(device);

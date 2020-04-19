@@ -13,6 +13,8 @@ typedef struct {
 } KernelTimer;
 
 typedef enum {
+    None,               // No creation of buffer (scalars and local memory)
+    Memory,             // Allocation of buffer that needs no read nor write from host
     Input,              // CL_MEM_WRITE_ONLY as tag for the creation of buffer
     Output,             // CL_MEM_READ_ONLY as tag for the creation of buffer
     InputOutput         // CL_MEM_READ_WRITE as tag for the creation of buffer
@@ -37,12 +39,19 @@ typedef struct {
 } KernelArg;
 
 typedef struct {
+    Device *p_device;   // A pointer to the device linked to the kernel
     KernelTimer timer;  // Timer information once the kernel was executed
     cl_program program; // OpenCL program
     cl_kernel kernel;   // OpenCL kernel
     KernelArg *args;    // Arguments for the kernel
     uint numArgs;       // Number of kernel arguments
 } Kernel;
+
+typedef struct {
+    cl_uint dim;        // The dimension for `global` and `local`
+    size_t global[3];   // An array containing the number of work-items per dimension
+    size_t local[3];    // An array containing the number of work-items per group per dimension
+} KernelRange;
 
 /**
  * Load the source code from a given filename
@@ -78,17 +87,14 @@ KernelArg createKernelArg(Device device, uint pos, IO io, size_t sizeOfType, uin
  * Init a kernel by:
  *      - Loading, creating and building the program
  *      - Creating the kernel
- *      - Setting all the arguments for the kernel
  * 
  * @param device    A Device struct, containing device ID and OpenCL context
  * @param name      The name of the kernel
  * @param filename  The filename of the source code
- * @param numArgs   The number of kernel arguments
- * @param args      The list of kernel arguments, each formatted as KernelArg struct
  * 
  * @return          Returns a Kernel struct with all the necessary information
  */
-Kernel initKernel(Device device, char *name, char *filename, uint numArgs, KernelArg *args);
+Kernel initKernel(Device device, char *name, char *filename);
 
 /**
  * Get the maximum local size that can be used for a given kernel
@@ -104,22 +110,27 @@ void getMaxLocalSize(Device device, Kernel kernel, size_t *p_localSize);
  * 
  * @param kernel    A Kernel struct
  * @param device    A Device struct
- * @param dim       The number of dimensions for `global` and `local`
- * @param global    The number of global work-items
- * @param local     The number of work-items per work-group
+ * @param range     A KernelRange struct, containing `dim`, `global` and `local`
  */
-void checkRangeSizes(Kernel kernel, Device device, cl_uint dim, size_t *global, size_t *local);
+void checkRangeSizes(Kernel kernel, Device device, KernelRange range);
+
+/**
+ * Set all the arguments for the kernel
+ * 
+ * @param p_kernel  A pointer to a Kernel struct
+ * @param numArgs   The number of kernel arguments
+ * @param args      The list of kernel arguments, each formatted as KernelArg struct
+ */
+void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args);
 
 /**
  * Run a given kernel and retreive the execution results
  * 
  * @param p_kernel  A pointer to a Kernel struct
  * @param device    A Device struct, containing device ID and OpenCL context
- * @param dim       The number of dimensions for `global` and `local`
- * @param global    The number of global work-items
- * @param local     The number of work-items per work-group
+ * @param range     A KernelRange struct, containing `dim`, `global` and `local`
  */
-void runKernel(Kernel *p_kernel, Device device, cl_uint dim, size_t *global, size_t *local);
+void runKernel(Kernel *p_kernel, Device device, KernelRange range);
 
 /**
  * Release:
