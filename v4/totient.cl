@@ -36,14 +36,14 @@ __kernel void totient(const ulong lower, const ulong upper, __local ulong *local
     localID = get_local_id(0);
     
     if (globalID == 0) { *result = 0; }
-    if (localID == 0) { local_sum[groupID] = 0; }
+    if (localID == 0) { *local_sum = 0; }
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     if (globalID + lower <= upper) {
         value = euler(globalID + lower);
-        atom_add(&(local_sum[groupID]), value);
+        atom_add(local_sum, value);
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (localID == 0) { atom_add(result, local_sum[groupID]); }
+    if (localID == 0) { atom_add(result, *local_sum); }
 }
