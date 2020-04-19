@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -134,6 +135,19 @@ void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args) {
 
         status = clSetKernelArg(p_kernel->kernel, p_kernel->args[i].pos, argSize, argValue);
         if (status != CL_SUCCESS) { ERROR("Error: Could not set kernel arg n°%d (code: %d)\n", p_kernel->args[i].pos, status); }
+    }
+}
+
+void initKernelRange(KernelRange *p_range, cl_uint dim, ulong dataSize, size_t localSize) {
+    size_t globalSize;
+
+    p_range->dim = (dim < 1 || dim > 3) ? 1 : dim;
+    // Round up the global size to be divisable by the local size
+    globalSize = ceil(dataSize / (float)localSize) * localSize;
+
+    for (uint i = 0; i < dim; i++) {
+        p_range->local[i] = localSize;
+        p_range->global[i] = globalSize;
     }
 }
 

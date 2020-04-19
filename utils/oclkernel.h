@@ -124,6 +124,16 @@ void checkRangeSizes(Kernel kernel, Device device, KernelRange range);
 void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args);
 
 /**
+ * Init a KernelRange by calculating the sizes necessary
+ * 
+ * @param p_range       A pointer to a KernelRange struct to init
+ * @param dim           The dimension for `global` and `local`
+ * @param dataSize      The size of the data to process (ideal global size)
+ * @param localSize     The `local` size (work-group size)
+ */
+void initKernelRange(KernelRange *p_range, cl_uint dim, ulong dataSize, size_t localSize);
+
+/**
  * Run a given kernel and retreive the execution results
  * 
  * @param p_kernel  A pointer to a Kernel struct

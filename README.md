@@ -23,6 +23,12 @@ make
 To run one of the versions:
 ```
 cd ./__VERSION__/
-srun --partition=amd-longq ./totient 1 15000 [cpu]
+srun --partition=amd-longq ./totient 1 15000 [localSize] [cpu]
 ```
-The last argument is optional, whether or not you prefer using the cpu instead of gpu.
+
+- `lower upper`: lower and upper bounds for the totient sum
+- `localSize`: (optional) 
+    - `-1`:  will run a loop (default)
+    - `0`:  will take its max possible value
+    - Otherwise will take the value given
+- `cpu`: (optional) whether or not you prefer using the cpu instead of gpu

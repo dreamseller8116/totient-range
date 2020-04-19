@@ -10,7 +10,7 @@ LDFLAGS	+= -framework OpenCL
 else
 
 OPENCL	:= /opt/AMDAPP
-CFLAGS	+= -O3 -Wall -Wextra -I$(OPENCL)/include -std=c99 -D_GNU_SOURCE -g
+CFLAGS	+= -O3 -Wall -Wextra -I$(OPENCL)/include -std=c99 -D_GNU_SOURCE -g -lm
 LDFLAGS	+= -L$(OPENCL)/lib/x86_64 -lrt -lOpenCL
 
 endif
