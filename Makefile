@@ -18,7 +18,7 @@ endif
 SOURCES := $(wildcard $(UTILS)/*.c)
 OBJECTS := $(patsubst $(UTILS)/%.c, $(UTILS)/%.o, $(SOURCES))
 
-TARGETS	:= totient v1/totient v2/totient v3/totient
+TARGETS	:= totient v1/totient v2/totient v3/totient v4/totient
 
 all: $(TARGETS)
 
@@ -32,6 +32,9 @@ v2/totient: v2/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 v3/totient: v3/totient.c $(OBJECTS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+v4/totient: v4/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 $(UTILS)/%.o: $(UTILS)/%.c
