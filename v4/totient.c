@@ -63,7 +63,7 @@ int main(int argc, char ** argv) {
     stop = wcTime();
 
     // Benchmark
-    printf("%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
+    printf("v4,%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
 
     // Clean OpenCL
     cleanDevice(device);

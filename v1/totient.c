@@ -17,7 +17,7 @@
 #define NUM_ARGS 3
 
 int main(int argc, char ** argv) {
-    ulong *result;
+    ulong *results;
     char deviceType[4];
     ulong lower, upper, dataSize, sum = 0;
     Time start, initStop, stop;
@@ -33,7 +33,7 @@ int main(int argc, char ** argv) {
     sscanf(argv[2], "%ld", &upper);
 
     dataSize = upper - lower + 1;
-    result = (ulong*) malloc(dataSize * sizeof(ulong));
+    results = (ulong*) malloc(dataSize * sizeof(ulong));
 
     start = wcTime();
     
@@ -47,7 +47,7 @@ int main(int argc, char ** argv) {
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
     args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), dataSize, result);
+    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), dataSize, results);
     initKernelArgs(&kernel, NUM_ARGS, args);
 
     initStop = wcTime();
@@ -62,14 +62,16 @@ int main(int argc, char ** argv) {
     runKernel(&kernel, device, range);
 
     // Sum the results
-    for (ulong i = 0; i < dataSize; i++) { sum += result[i]; }
+    for (ulong i = 0; i < dataSize; i++) { sum += results[i]; }
 
     stop = wcTime();
 
     // Benchmark
-    printf("%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
+    printf("v1,%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
 
     // Clean OpenCL
     cleanDevice(device);
     cleanKernel(kernel);
+
+    free(results);
 }

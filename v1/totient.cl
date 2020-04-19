@@ -25,10 +25,10 @@ ulong euler(ulong n) {
     return length;
 }
 
-__kernel void totient(const ulong lower, const ulong upper, __global ulong *result) {
+__kernel void totient(const ulong lower, const ulong upper, __global ulong *results) {
     uint gid = get_global_id(0);
 
-    if ((gid >= 0) && (gid <= (upper - lower))) {
-        result[gid] = euler(gid + lower);
+    if (gid + lower <= upper) {
+        results[gid] = euler(gid + lower);
     }
 }

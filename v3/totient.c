@@ -17,7 +17,7 @@
 #define NUM_ARGS 3
 
 int main(int argc, char ** argv) {
-    ulong *result;
+    ulong *groupResults;
     char deviceType[4];
     ulong lower, upper, dataSize, numGroups, sum = 0;
     Time start, initStop, stop;
@@ -49,12 +49,12 @@ int main(int argc, char ** argv) {
     numGroups = ceil(dataSize / (float)range.local[0]);
     range.global[0] = numGroups * range.local[0];
 
-    result = (ulong*) malloc(numGroups * sizeof(ulong));
+    groupResults = (ulong*) malloc(numGroups * sizeof(ulong));
 
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
     args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), numGroups, result);
+    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), numGroups, groupResults);
     initKernelArgs(&kernel, NUM_ARGS, args);
 
     initStop = wcTime();
@@ -63,16 +63,16 @@ int main(int argc, char ** argv) {
     runKernel(&kernel, device, range);
 
     // Sum the results
-    for (ulong i = 0; i < numGroups; i++) { sum += result[i]; }
+    for (ulong i = 0; i < numGroups; i++) { sum += groupResults[i]; }
 
     stop = wcTime();
 
     // Benchmark
-    printf("%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
+    printf("v3,%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
 
     // Clean OpenCL
     cleanDevice(device);
     cleanKernel(kernel);
 
-    free(result);
+    free(groupResults);
 }
