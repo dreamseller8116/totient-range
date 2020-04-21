@@ -7,6 +7,8 @@
 #include <CL/cl.h>
 #endif
 
+#include "ocldevice.h"
+
 typedef struct {
     double gpu;         // Time spent on GPU
     double kernel;      // Time spent on Kernel
@@ -124,14 +126,23 @@ void checkRangeSizes(Kernel kernel, Device device, KernelRange range);
 void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args);
 
 /**
- * Init a KernelRange by calculating the sizes necessary
+ * Init a KernelRange in 1D by calculating the sizes necessary
  * 
  * @param p_range       A pointer to a KernelRange struct to init
- * @param dim           The dimension for `global` and `local`
  * @param dataSize      The size of the data to process (ideal global size)
  * @param localSize     The `local` size (work-group size)
  */
-void initKernelRange(KernelRange *p_range, cl_uint dim, ulong dataSize, size_t localSize);
+void initKernelRange1D(KernelRange *p_range, ulong dataSize, size_t localSize);
+
+/**
+ * Init a KernelRange in 2D by calculating the sizes necessary
+ * 
+ * @param p_range       A pointer to a KernelRange struct to init
+ * @param dataSize_0    The idal `global` size for dimension 1
+ * @param dataSize_1    The idal `global` size for dimension 2
+ * @param localSize     The `local` size (local[0]*local[1])
+ */
+void initKernelRange2D(KernelRange *p_range, ulong dataSize_0, ulong dataSize_1, size_t localSize);
 
 /**
  * Run a given kernel and retreive the execution results

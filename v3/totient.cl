@@ -35,9 +35,11 @@ __kernel void totient(const ulong lower, const ulong upper, __global ulong *grou
     groupID = get_group_id(0);
     localID = get_local_id(0);
     
+    // Init local result
     if (localID == 0) { groupResults[groupID] = 0; }
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    // Add private euler directly to local result
     if (globalID + lower <= upper) {
         value = euler(globalID + lower);
         atom_add(&(groupResults[groupID]), value);

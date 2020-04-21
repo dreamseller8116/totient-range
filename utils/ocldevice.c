@@ -3,11 +3,7 @@
 #include <stdarg.h>
 
 #include "ocldevice.h"
-
-#define ERROR(msg, ...) {                           \
-    (void) fprintf(stderr, msg, ## __VA_ARGS__);    \
-    (void) exit(1);                                 \
-}
+#include "io.h"
 
 cl_int getPlatforms(cl_platform_id **p_platforms, cl_uint *p_numPlatforms) {
     cl_int status;

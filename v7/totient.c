@@ -1,16 +1,12 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "../utils/ocldevice.h"
 #include "../utils/oclkernel.h"
 #include "../utils/timer.h"
+#include "../utils/io.h"
 
-#define ERROR(msg, ...) {                           \
-    (void) fprintf(stderr, msg, ## __VA_ARGS__);    \
-    (void) exit(1);                                 \
-}
-
+#define VERSION "v7"
 #define SOURCE_FILE "totient.cl"
 #define KERNEL_NAME "totient"
 #define NUM_ARGS 4
@@ -32,12 +28,12 @@ size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     // Init the kernel
     kernel = initKernel(device, KERNEL_NAME, SOURCE_FILE);
 
-    // Init the karnel range sizes
+    // Init the kernel range sizes
     dataSize = upper - lower + 1;
     getMaxLocalSize(device, kernel, &maxLocalSize);
     if (localSize > maxLocalSize) { ERROR("Error: Local size exceeds its bounds\n"); }
-    else if (localSize == 0) { initKernelRange(&range, 1, dataSize, maxLocalSize); }
-    else { initKernelRange(&range, 1, dataSize, localSize); }
+    else if (localSize == 0) { initKernelRange1D(&range, dataSize, maxLocalSize); }
+    else { initKernelRange1D(&range, dataSize, localSize); }
 
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
@@ -54,7 +50,7 @@ size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     stop = wcTime();
 
     // Benchmark
-    printf("v7,%ld,%ld,%s,%d,%ld,%ld,%.6f,%.6f,%.6f,%.6f,%ld\n", lower, upper, deviceType, (int)range.dim, (long)range.global[0], (long)range.local[0], elapsedTime(start, initStop), kernel.timer.kernel, kernel.timer.gpu, elapsedTime(start, stop), sum);
+    save(VERSION, lower, upper, deviceType, range, elapsedTime(start, initStop), kernel.timer, elapsedTime(start, stop), sum);
 
     // Clean OpenCL
     cleanDevice(device);
@@ -78,18 +74,13 @@ void runBenchmark(ulong lower, ulong upper, int localSize, char *deviceType) {
     }
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
     char deviceType[4];
     ulong lower, upper;
-    int localSize = -1;
+    int localSize;
 
-    // Check the program arguments
-    if (argc < 3) { ERROR("Error: Need at least 2 arguments (lower upper [localSize] [cpu])\n"); }
-    else if (argc > 3) { sscanf(argv[3], "%d", &localSize); }
-
-    sscanf(argv[1], "%ld", &lower);
-    sscanf(argv[2], "%ld", &upper);
-    strcpy(deviceType, (argc == 5) ? "CPU" : "GPU");
+    // Init variables
+    initArgs(argc, argv, &lower, &upper, &localSize, deviceType);
 
     // Run the benchmark
     runBenchmark(lower, upper, localSize, deviceType);

@@ -34,11 +34,12 @@ __kernel void totient(const ulong lower, const ulong upper, __local ulong *local
     localID = get_local_id(0);
     localSize = get_local_size(0);
 
+    // Calculate private euler
     if (globalID + lower <= upper) { localResults[localID] = euler(globalID + lower); }
     else { localResults[localID] = 0; }
 
+    // Sum all results in local scope (local sync)
     barrier(CLK_LOCAL_MEM_FENCE);
-
     if (localID == 0) {
         for (ulong i = 0; i < localSize; i++) {
             sum += localResults[i];

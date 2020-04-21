@@ -3,14 +3,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "ocldevice.h"
 #include "oclkernel.h"
 #include "timer.h"
-
-#define ERROR(msg, ...) {                           \
-    (void) fprintf(stderr, msg, ## __VA_ARGS__);    \
-    (void) exit(1);                                 \
-}
+#include "io.h"
 
 void loadSource(char* filename, char *source, size_t *p_size) {
     FILE *file;
@@ -138,16 +133,40 @@ void initKernelArgs(Kernel *p_kernel, uint numArgs, KernelArg *args) {
     }
 }
 
-void initKernelRange(KernelRange *p_range, cl_uint dim, ulong dataSize, size_t localSize) {
+void initKernelRange1D(KernelRange *p_range, ulong dataSize, size_t localSize) {
     size_t globalSize;
 
-    p_range->dim = (dim < 1 || dim > 3) ? 1 : dim;
+    p_range->dim = 1;
     // Round up the global size to be divisable by the local size
     globalSize = ceil(dataSize / (float)localSize) * localSize;
 
-    for (uint i = 0; i < dim; i++) {
-        p_range->local[i] = localSize;
-        p_range->global[i] = globalSize;
+    for (uint i = 0; i < 3; i++) {
+        if (i < p_range->dim) {
+            p_range->local[i] = localSize;
+            p_range->global[i] = globalSize;
+        } else {
+            p_range->local[i] = 0;
+            p_range->global[i] = 0;
+        }
+    }
+}
+
+void initKernelRange2D(KernelRange *p_range, ulong dataSize_0, ulong dataSize_1, size_t localSize) {
+    size_t local, dataSize;
+
+    p_range->dim = 2;
+    local = ceil(sqrt(localSize));
+
+    for (uint i = 0; i < 3; i++) {
+        if (i < p_range->dim) {
+            p_range->local[i] = local;
+            // Round up the global size to be divisable by the local size
+            dataSize = (i == 0) ? dataSize_0 : dataSize_1;
+            p_range->global[i] = ceil(dataSize / (float)local) * local;
+        } else {
+            p_range->local[i] = 0;
+            p_range->global[i] = 0;
+        }
     }
 }
 

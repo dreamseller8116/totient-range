@@ -26,9 +26,12 @@ ulong euler(ulong n) {
 }
 
 __kernel void totient(const ulong lower, const ulong upper, __global ulong *results) {
-    uint gid = get_global_id(0);
+    uint globalID;
 
-    if (gid + lower <= upper) {
-        results[gid] = euler(gid + lower);
+    globalID = get_global_id(0);
+
+    // Calculate private euler
+    if (globalID + lower <= upper) {
+        results[globalID] = euler(globalID + lower);
     }
 }

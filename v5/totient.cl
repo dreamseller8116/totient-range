@@ -33,9 +33,11 @@ __kernel void totient(const ulong lower, const ulong upper, __global ulong *resu
 
     globalID = get_global_id(0);
     
+    // Init the result
     if (globalID == 0) { *result = 0; }
     barrier(CLK_GLOBAL_MEM_FENCE);
 
+    // Add private euler directly to result
     if (globalID + lower <= upper) {
         value = euler(globalID + lower);
         atom_add(result, value);

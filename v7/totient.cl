@@ -12,7 +12,6 @@ ulong hcf(ulong x, ulong y) {
     return x;
 }
 
-
 int relprime(ulong x, ulong y) {
     return hcf(x, y) == 1;
 }
@@ -27,7 +26,7 @@ ulong euler(ulong n) {
     return length;
 }
 
-__kernel void totient(const ulong lower, const ulong upper, __local ulong *localSums, __global ulong *result) {
+__kernel void totient(const ulong lower, const ulong upper, __local ulong *localResults, __global ulong *result) {
     uint globalID, localID, localSize;
     ulong value = 0;
 
@@ -35,17 +34,22 @@ __kernel void totient(const ulong lower, const ulong upper, __local ulong *local
     localID = get_local_id(0);
     localSize = get_local_size(0);
 
+    // Init the result
     if (globalID == 0) { *result = 0; }
     barrier(CLK_GLOBAL_MEM_FENCE);
 
+    // Calculate private euler
     if (globalID + lower <= upper) { value = euler(globalID + lower); }
 
-    localSums[localID] = value;
+    // Parallel sum reduction in local scope
+    // https://www.cl.cam.ac.uk/teaching/1617/AdvGraph/07_OpenCL.pdf
+    localResults[localID] = value;
     for (uint offset = localSize/2; offset > 0; offset /= 2) {
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (localID < offset) { localSums[localID] += localSums[localID + offset]; }
+        if (localID < offset) { localResults[localID] += localResults[localID + offset]; }
     }
 
+    // Add local result to global
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (localID == 0) { atom_add(result, localSums[0]); }
+    if (localID == 0) { atom_add(result, localResults[0]); }
 }

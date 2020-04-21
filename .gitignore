@@ -1,2 +1,5 @@
 **/totient
 *.o
+*.csv
+*.out
+*.err
