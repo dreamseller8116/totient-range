@@ -1,19 +1,22 @@
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "../utils/ocldevice.h"
-#include "../utils/oclkernel.h"
-#include "../utils/timer.h"
-#include "../utils/io.h"
+#include "../../utils/ocldevice.h"
+#include "../../utils/oclkernel.h"
+#include "../../utils/timer.h"
+#include "../../utils/io.h"
 
-#define VERSION "v5"
+#define VERSION "2d-v2"
 #define SOURCE_FILE "totient.cl"
 #define KERNEL_NAME "totient"
-#define NUM_ARGS 3
+#define NUM_ARGS 4
 
 size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     size_t maxLocalSize;
-    ulong dataSize, sum;
+    ulong *groupResults;
+    ulong dataSize_0, dataSize_1, numGroups, sum = 0;
     Time start, initStop, stop;
     KernelArg args[NUM_ARGS];
     KernelRange range;
@@ -29,22 +32,30 @@ size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     kernel = initKernel(device, KERNEL_NAME, SOURCE_FILE);
 
     // Init the kernel range sizes
-    dataSize = upper - lower + 1;
+    dataSize_0 = upper - lower + 1;
+    dataSize_1 = upper;
     getMaxLocalSize(device, kernel, &maxLocalSize);
     if (localSize > maxLocalSize) { ERROR("Error: Local size exceeds its bounds\n"); }
-    else if (localSize == 0) { initKernelRange1D(&range, dataSize, maxLocalSize); }
-    else { initKernelRange1D(&range, dataSize, localSize); }
+    else if (localSize == 0) { initKernelRange2D(&range, dataSize_0, dataSize_1, maxLocalSize); }
+    else { initKernelRange2D(&range, dataSize_0, dataSize_1, localSize); }
+
+    numGroups = (range.global[0]/range.local[0]) * (range.global[1]/range.local[1]);
+    groupResults = (ulong*) malloc(numGroups * sizeof(ulong));
 
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
     args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), 1, &sum);
+    args[2] = createKernelArg(device, 2, None, sizeof(ulong), (range.local[0] * range.local[1]), NULL);
+    args[3] = createKernelArg(device, 3, Output, sizeof(ulong), numGroups, groupResults);
     initKernelArgs(&kernel, NUM_ARGS, args);
 
     initStop = wcTime();
 
     // Run the kernel
     runKernel(&kernel, device, range);
+
+    // Sum the results
+    for (ulong i = 0; i < numGroups; i++) { sum += groupResults[i]; }
 
     stop = wcTime();
 
@@ -54,6 +65,8 @@ size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     // Clean OpenCL
     cleanDevice(device);
     cleanKernel(kernel);
+
+    free(groupResults);
 
     return maxLocalSize;
 }
@@ -66,9 +79,10 @@ void runBenchmark(ulong lower, ulong upper, int localSize, char *deviceType) {
     else {
         // Else we run the benchmark in loop
         // By running once and retrieving the maxLocalSize
-        maxLocalSize = benchmark(lower, upper, 2, deviceType);
-        for (uint i = 4; i <= maxLocalSize; i *= 4) {
-            benchmark(lower, upper, i, deviceType);
+        maxLocalSize = benchmark(lower, upper, 1, deviceType);
+        // We square the localSize as we use 2 dimensions
+        for (uint i = 2; pow(i, 2) <= maxLocalSize; i *= 2) {
+            benchmark(lower, upper, pow(i, 2), deviceType);
         }
     }
 }

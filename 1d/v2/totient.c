@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../utils/ocldevice.h"
-#include "../utils/oclkernel.h"
-#include "../utils/timer.h"
-#include "../utils/io.h"
+#include "../../utils/ocldevice.h"
+#include "../../utils/oclkernel.h"
+#include "../../utils/timer.h"
+#include "../../utils/io.h"
 
-#define VERSION "v2"
+#define VERSION "1d-v2"
 #define SOURCE_FILE "totient.cl"
 #define KERNEL_NAME "totient"
 #define NUM_ARGS 4

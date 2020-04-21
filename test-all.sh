@@ -11,7 +11,7 @@ if [[ "$#" -gt 0 ]]; then
     localSize=$1
 fi
 
-for version in $(ls -d v*/); do    
+for version in $(ls -d **/v*/); do    
     cd $version
 
     find . -type f -name '*.csv' -delete
@@ -22,5 +22,5 @@ for version in $(ls -d v*/); do
         srun totient 1 10000 $localSize
     fi
 
-    cd ..
+    cd ../..
 done

@@ -18,53 +18,55 @@ endif
 SOURCES := $(wildcard $(UTILS)/*.c)
 OBJECTS := $(patsubst $(UTILS)/%.c, $(UTILS)/%.o, $(SOURCES))
 
-TARGETS	:= totient v1/totient v1_2d/totient v2/totient v2_2d/totient v3/totient v3_2d/totient v4/totient v4_2d/totient v5/totient v5_2d/totient v6/totient v6_2d/totient v7/totient v7_2d/totient
+TARGETS_1D	:= 1d/v1/totient 1d/v2/totient 1d/v3/totient 1d/v4/totient 1d/v5/totient 1d/v6/totient 1d/v7/totient
+TARGETS_2D	:= 2d/v1/totient 2d/v2/totient 2d/v3/totient 2d/v4/totient 2d/v5/totient 2d/v6/totient 2d/v7/totient
+TARGETS		:= totient $(TARGETS_1D) $(TARGETS_2D)
 
 all: $(TARGETS)
 
 totient: totient.c utils/timer.o
 	$(CC) $^ -o $@
 
-v1/totient: v1/totient.c $(OBJECTS)
+1d/v1/totient: 1d/v1/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v1_2d/totient: v1_2d/totient.c $(OBJECTS)
+1d/v2/totient: 1d/v2/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v2/totient: v2/totient.c $(OBJECTS)
+1d/v3/totient: 1d/v3/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v2_2d/totient: v2_2d/totient.c $(OBJECTS)
+1d/v4/totient: 1d/v4/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v3/totient: v3/totient.c $(OBJECTS)
+1d/v5/totient: 1d/v5/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v3_2d/totient: v3_2d/totient.c $(OBJECTS)
+1d/v6/totient: 1d/v6/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v4/totient: v4/totient.c $(OBJECTS)
+1d/v7/totient: 1d/v7/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v4_2d/totient: v4_2d/totient.c $(OBJECTS)
+2d/v1/totient: 2d/v1/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v5/totient: v5/totient.c $(OBJECTS)
+2d/v2/totient: 2d/v2/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v5_2d/totient: v5_2d/totient.c $(OBJECTS)
+2d/v3/totient: 2d/v3/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v6/totient: v6/totient.c $(OBJECTS)
+2d/v4/totient: 2d/v4/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v6_2d/totient: v6_2d/totient.c $(OBJECTS)
+2d/v5/totient: 2d/v5/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v7/totient: v7/totient.c $(OBJECTS)
+2d/v6/totient: 2d/v6/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-v7_2d/totient: v7_2d/totient.c $(OBJECTS)
+2d/v7/totient: 2d/v7/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 $(UTILS)/%.o: $(UTILS)/%.c

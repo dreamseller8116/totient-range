@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../utils/ocldevice.h"
-#include "../utils/oclkernel.h"
-#include "../utils/timer.h"
-#include "../utils/io.h"
+#include "../../utils/ocldevice.h"
+#include "../../utils/oclkernel.h"
+#include "../../utils/timer.h"
+#include "../../utils/io.h"
 
-#define VERSION "v7"
+#define VERSION "1d-v5"
 #define SOURCE_FILE "totient.cl"
 #define KERNEL_NAME "totient"
-#define NUM_ARGS 4
+#define NUM_ARGS 3
 
 size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     size_t maxLocalSize;
@@ -38,8 +38,7 @@ size_t benchmark(ulong lower, ulong upper, size_t localSize, char *deviceType) {
     // Create all the kernel arguments
     args[0] = createKernelArg(device, 0, None, sizeof(ulong), 1, &lower);
     args[1] = createKernelArg(device, 1, None, sizeof(ulong), 1, &upper);
-    args[2] = createKernelArg(device, 2, None, sizeof(ulong), range.local[0], NULL);
-    args[3] = createKernelArg(device, 3, Output, sizeof(ulong), 1, &sum);
+    args[2] = createKernelArg(device, 2, Output, sizeof(ulong), 1, &sum);
     initKernelArgs(&kernel, NUM_ARGS, args);
 
     initStop = wcTime();
