@@ -12,6 +12,8 @@ Using OpenCL to optimize the sequential code for totient sum.
 - `v6/`: modified v2 for parallel sum reduction (local sync)
 - `v7/`: extended v6 to add global atomic sum reduction (like v4)
 
+All versions ending with `*_2d` are the versions re-implemented for 2D.
+
 ## Usage
 
 To initializa the project:
