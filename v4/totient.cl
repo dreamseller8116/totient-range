@@ -28,11 +28,10 @@ ulong euler(ulong n) {
 }
 
 __kernel void totient(const ulong lower, const ulong upper, __local ulong *localResult, __global ulong *result) {
-    uint globalID, groupID, localID;
+    uint globalID, localID;
     ulong value;
 
     globalID = get_global_id(0);
-    groupID = get_group_id(0);
     localID = get_local_id(0);
     
     // Init the result

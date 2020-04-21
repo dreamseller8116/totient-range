@@ -8,7 +8,7 @@ void initArgs(int argc, char *argv[], ulong *p_lower, ulong *p_upper, int *p_loc
     *p_localSize = -1;
 
     // Check the program arguments
-    if (argc < 4) { ERROR("Error: Need at least 3 arguments (lower upper [localSize] [cpu])\n"); }
+    if (argc < 3) { ERROR("Error: Need at least 3 arguments (lower upper [localSize] [cpu])\n"); }
     else if (argc > 3) { sscanf(argv[3], "%d", p_localSize); }
 
     sscanf(argv[1], "%ld", p_lower);

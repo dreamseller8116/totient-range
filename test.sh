@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=amd-longq
+#SBATCH --partition=amd-shortq
 #SBATCH -t00:05:00
 #SBATCH -J totient
 #SBATCH --error=sbatch.err
