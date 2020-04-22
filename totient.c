@@ -39,16 +39,15 @@ long sumTotient(long lower, long upper) {
 
 void runBenchmark(long lower, long upper) {
     Time start, stop;
-    double time_taken;
+    double time;
     long sum;
 
     start = wcTime();
     sum = sumTotient(lower, upper);
     stop = wcTime();
 
-    time_taken = elapsedTime(start, stop);
-    printf("%.6f ms\n", time_taken);
-    printf("%ld\n", sum);
+    time = elapsedTime(start, stop);
+    printf("seq,%ld,%ld,%.6f,%ld", lower, upper, time, sum);
 }
 
 int main(int argc, char ** argv) {
