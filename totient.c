@@ -47,7 +47,7 @@ void runBenchmark(long lower, long upper) {
     stop = wcTime();
 
     time = elapsedTime(start, stop);
-    printf("seq,%ld,%ld,%.6f,%ld", lower, upper, time, sum);
+    printf("seq,%ld,%ld,%.6f,%ld\n", lower, upper, time, sum);
 }
 
 int main(int argc, char ** argv) {
