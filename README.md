@@ -13,7 +13,8 @@ Using OpenCL to optimize the sequential code for totient sum.
 - `*/v7/`: extended v6 to add global atomic sum reduction (like v4)
 - `*/v8/`: modified v7 to divide to data size by 2 (work-item working twice as much)
 
-All versions were first implemented in 1D: `1d/*`
+All versions were first implemented in 1D sizes: `1d/*`
+
 Then all versions were re-implemented for using 2D sizes: `2d/*`
 
 ## Usage
@@ -36,3 +37,13 @@ srun --partition=amd-longq ./totient 1 15000 [localSize] [cpu]
     - `0`:  will take its max possible value
     - Otherwise will take the value given
 - `cpu`: (optional) whether or not you prefer using the cpu instead of gpu
+
+### SBATCH
+
+Test the versions:
+- `sbatch test.sh ./__DIMENSION_/__VERSION__/ [localSize] [cpu]`
+- `sbatch test-all.sh [localSize] [cpu]`
+
+Benchmarking: (dimensions + versions + localSize)
+- `sbatch benchmark-seq.sh` (sequential)
+- `sbatch benchmark.sh`
