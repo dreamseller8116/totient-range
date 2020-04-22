@@ -16,10 +16,10 @@ for try in {1..3}; do
     find . -type f -name '*d-v*.csv' -delete
 
     for folder in ${folders[@]}; do
-        cd folder
+        cd $folder
 
         for ds in ${array[@]}; do
-            for version in $(ls -d v*/); do    
+            for version in $(ls -d v*/); do
                 cd $version
 
                 if [[ folder == "1d" ]]; then
