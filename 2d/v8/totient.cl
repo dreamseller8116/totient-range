@@ -1,3 +1,5 @@
+// Anthony Genson  23/04/2020
+
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics: enable
 
 ulong hcf(ulong x, ulong y) {

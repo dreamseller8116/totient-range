@@ -1,7 +1,8 @@
+// Anthony Genson  23/04/2020
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 #include "oclkernel.h"
 #include "timer.h"
@@ -155,6 +156,7 @@ void initKernelRange2D(KernelRange *p_range, ulong dataSize_0, ulong dataSize_1,
     size_t local, dataSize;
 
     p_range->dim = 2;
+    // Take the square root of localSize (=local[0]*local[1])
     local = ceil(sqrt(localSize));
 
     for (uint i = 0; i < 3; i++) {

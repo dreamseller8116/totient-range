@@ -1,4 +1,5 @@
 #!/bin/bash
+#Anthony Genson 23/04/2020
 
 #SBATCH --partition=amd-longq
 #SBATCH --exclusive

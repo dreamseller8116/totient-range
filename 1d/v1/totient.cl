@@ -1,3 +1,5 @@
+// Anthony Genson  23/04/2020
+
 ulong hcf(ulong x, ulong y) {
     ulong t;
 

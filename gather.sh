@@ -1,3 +1,5 @@
+#Anthony Genson 23/04/2020
+
 if [[ "$#" -lt 1 ]]; then
     echo "Error: needs 1 argument (filename)." 1>&2
     exit 128

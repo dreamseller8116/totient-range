@@ -1,3 +1,7 @@
+// Greg Michaelson 14/10/2003
+// Patrick Maier   29/01/2010 [enforced ANSI C compliance]
+// Anthony Genson  23/04/2020
+
 #include <stdio.h>
 
 #include "utils/timer.h"

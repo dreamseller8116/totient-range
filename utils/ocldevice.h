@@ -1,3 +1,5 @@
+// Anthony Genson  23/04/2020
+
 #ifndef OCL_DEVICE_H
 #define OCL_DEVICE_H
 

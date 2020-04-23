@@ -1,3 +1,5 @@
+// Anthony Genson  23/04/2020
+
 #ifndef OCL_KERNEL_H
 #define OCL_KERNEL_H
 

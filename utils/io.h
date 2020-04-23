@@ -1,3 +1,5 @@
+// Anthony Genson  23/04/2020
+
 #ifndef IO_H
 #define IO_H
 
@@ -15,7 +17,7 @@
  * @param argv          argv from main
  * @param p_lower       Pointer to value, will contain lower bound
  * @param p_upper       Pointer to value, will contain upper bound
- * @param p_localSize   Pointer to value, will contain
+ * @param p_localSize   Pointer to value, will contain local size
  * @param deviceType    Will be equal to either `GPU` or `CPU`
  */
 void initArgs(int argc, char *argv[], ulong *p_lower, ulong *p_upper, int *p_localSize, char *deviceType);
