@@ -25,7 +25,7 @@ TARGETS		:= totient $(TARGETS_1D) $(TARGETS_2D)
 all: $(TARGETS)
 
 totient: totient.c utils/timer.o
-	$(CC) $^ -o $@
+	$(CC) -O3 $^ -o $@
 
 1d/v1/totient: 1d/v1/totient.c $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
