@@ -1,5 +1,5 @@
-**/totient
-*.o
-*.csv
+totient
 *.out
-*.err
+*.csv
+*.gcda
+*~
